@@ -204,7 +204,9 @@ export default class LazyLog extends Component {
     };
   }
 
-  state = {};
+  state = {
+    resultLines: [],
+  };
 
   componentDidMount() {
     this.request();
@@ -294,8 +296,8 @@ export default class LazyLog extends Component {
     });
   };
 
-  handleEnd = ({ arrayBuffer, linesRanges } = {}) => {
-    this.setState({ loaded: true, rawFileBuffer: arrayBuffer, linesRanges });
+  handleEnd = encodedLog => {
+    this.setState({ loaded: true, encodedLog });
 
     if (this.props.onLoad) {
       this.props.onLoad();
@@ -345,16 +347,11 @@ export default class LazyLog extends Component {
   };
 
   handleSearch = keywords => {
-    const {
-      rawFileBuffer,
-      linesRanges,
-      resultLines,
-      searchKeywords,
-    } = this.state;
+    const { encodedLog, resultLines, searchKeywords } = this.state;
     let currentResultLines = resultLines;
 
     if (keywords !== searchKeywords) {
-      currentResultLines = searchLines(keywords, rawFileBuffer, linesRanges);
+      currentResultLines = searchLines(keywords, encodedLog);
     }
 
     this.setState({
@@ -377,7 +374,7 @@ export default class LazyLog extends Component {
   };
 
   handleFilterLinesWithMatches = isFilteringLinesWithMatches => {
-    const { resultLines = [], lines } = this.state;
+    const { resultLines, lines } = this.state;
 
     this.setState({
       isFilteringLinesWithMatches,
@@ -552,7 +549,7 @@ export default class LazyLog extends Component {
     const { enableSearch } = this.props;
 
     if (enableSearch) {
-      const { resultLines = [] } = this.state;
+      const { resultLines } = this.state;
 
       return (
         <SearchBar
