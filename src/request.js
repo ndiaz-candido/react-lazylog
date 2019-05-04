@@ -1,9 +1,8 @@
 import mitt from 'mitt';
 import { convertBufferToLines } from './utils';
 
-const fetcher = Promise.resolve().then(
-  () =>
-    'fetch' in self ? self.fetch : import('whatwg-fetch').then(() => self.fetch)
+const fetcher = Promise.resolve().then(() =>
+  'fetch' in self ? self.fetch : import('whatwg-fetch').then(() => self.fetch)
 );
 
 export default (url, options) => {
@@ -27,10 +26,11 @@ export default (url, options) => {
       }
 
       const arrayBuffer = await response.arrayBuffer();
-      const { lines } = convertBufferToLines(new Uint8Array(arrayBuffer));
+      const encodedLog = new Uint8Array(arrayBuffer);
+      const { lines } = convertBufferToLines(encodedLog);
 
-      emitter.emit('update', lines);
-      emitter.emit('end');
+      emitter.emit('update', { lines });
+      emitter.emit('end', encodedLog);
     } catch (err) {
       emitter.emit('error', err);
     }
